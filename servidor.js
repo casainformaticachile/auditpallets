@@ -1,35 +1,51 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
-const { DateTime } = require('luxon');
 const app = express();
 const PORT = process.env.PORT || 3000;
+const DATA_FILE = path.join(__dirname, 'data.json');
 
 app.use(express.json());
-app.use(express.static(__dirname));
 
-const archivo = path.join(__dirname, 'pallets.json');
-if (!fs.existsSync(archivo)) fs.writeFileSync(archivo, '[]');
-
-app.get('/pallets', (req, res) => {
-  const data = fs.readFileSync(archivo, 'utf8');
-  res.json(JSON.parse(data));
+// Servir el archivo index.html
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-app.post('/guardar', (req, res) => {
+// Obtener todos los pallets
+app.get('/api/pallets', (req, res) => {
+  fs.readFile(DATA_FILE, 'utf8', (err, data) => {
+    if (err) return res.status(500).json({ error: 'Error leyendo datos.' });
+    res.json(JSON.parse(data || '[]'));
+  });
+});
+
+// Agregar un nuevo pallet con código y fecha/hora local
+app.post('/api/pallets', (req, res) => {
   const { codigo } = req.body;
-  if (!codigo) return res.status(400).json({ status: 'error' });
+  if (!codigo) return res.status(400).json({ error: 'Falta el código del pallet.' });
 
-  const data = JSON.parse(fs.readFileSync(archivo, 'utf8'));
-  const existente = data.find(p => p.codigo === codigo);
-  if (existente) return res.json({ status: 'duplicado', fecha: existente.fecha });
+  // Fecha y hora local en formato YYYY-MM-DD HH:mm:ss
+  const ahora = new Date();
+  const fecha = ahora.getFullYear() +
+    '-' + String(ahora.getMonth() + 1).padStart(2, '0') +
+    '-' + String(ahora.getDate()).padStart(2, '0') +
+    ' ' + String(ahora.getHours()).padStart(2, '0') +
+    ':' + String(ahora.getMinutes()).padStart(2, '0') +
+    ':' + String(ahora.getSeconds()).padStart(2, '0');
 
-  const fecha = DateTime.now().setZone("America/Los_Angeles").toFormat("yyyy-MM-dd HH:mm:ss");
-  data.push({ codigo, fecha });
-  fs.writeFileSync(archivo, JSON.stringify(data, null, 2));
-  res.json({ status: 'ok' });
+  const nuevo = { codigo, fecha };
+  fs.readFile(DATA_FILE, 'utf8', (err, data) => {
+    let pallets = [];
+    if (!err && data) pallets = JSON.parse(data);
+    pallets.push(nuevo);
+    fs.writeFile(DATA_FILE, JSON.stringify(pallets, null, 2), err => {
+      if (err) return res.status(500).json({ error: 'Error guardando datos.' });
+      res.json({ ok: true, agregado: nuevo });
+    });
+  });
 });
 
 app.listen(PORT, () => {
-  console.log(`Servidor funcionando en puerto ${PORT}`);
+  console.log(`Servidor corriendo en puerto ${PORT}`);
 });

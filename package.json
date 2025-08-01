@@ -1,12 +1,15 @@
 {
   "name": "auditpallets",
   "version": "1.0.0",
+  "description": "App simple para guardar y consultar datos de pallets usando Node.js y Express",
   "main": "servidor.js",
   "scripts": {
     "start": "node servidor.js"
   },
+  "keywords": [],
+  "author": "Andres",
+  "license": "ISC",
   "dependencies": {
-    "express": "^4.18.2",
-    "luxon": "^3.4.3"
+    "express": "^4.18.2"
   }
 }
