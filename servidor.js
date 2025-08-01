@@ -45,9 +45,14 @@ app.post('/guardar', (req, res) => {
 
   // Guardar con hora local (UTC-4) manualmente corregida
   const ahora = new Date();
-  const ahoraLocal = new Date(ahora.getTime() - 4 * 60 * 60 * 1000); // UTC-4
-  const nuevo = { codigo, fecha: ahoraLocal.toISOString() };
-  data.push(nuevo);
+const ahora = new Date();
+const fecha = ahora.getFullYear() + '-' +
+              String(ahora.getMonth()+1).padStart(2, '0') + '-' +
+              String(ahora.getDate()).padStart(2, '0') + ' ' +
+              String(ahora.getHours()).padStart(2, '0') + ':' +
+              String(ahora.getMinutes()).padStart(2, '0') + ':' +
+              String(ahora.getSeconds()).padStart(2, '0');
+const nuevo = { codigo, fecha };
   fs.writeFileSync(archivo, JSON.stringify(data, null, 2));
   res.json({ status: 'ok' });
 });
