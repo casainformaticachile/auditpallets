@@ -1,35 +1,24 @@
-
 const express = require('express');
 const fs = require('fs');
-const { DateTime } = require('luxon');
 const path = require('path');
+const { DateTime } = require('luxon');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const archivo = path.join(__dirname, 'pallets.json');
-
 app.use(express.json());
 app.use(express.static(__dirname));
+const archivo = path.join(__dirname, 'pallets.json');
 
-// Cargar todos los pallets
-app.get('/todos', (req, res) => {
-  if (!fs.existsSync(archivo)) return res.json([]);
-  const data = JSON.parse(fs.readFileSync(archivo, 'utf8'));
-  res.json(data);
-});
+// Asegurar que el archivo exista
+if (!fs.existsSync(archivo)) {
+  fs.writeFileSync(archivo, '[]');
+}
 
-// Cargar solo los pallets auditados hoy
-app.get('/hoy', (req, res) => {
-  if (!fs.existsSync(archivo)) return res.json([]);
-  const data = JSON.parse(fs.readFileSync(archivo, 'utf8'));
-
-  const hoy = new Date();
-  const dataHoy = data.filter(p => {
-    const fecha = new Date(p.fecha);
-    return fecha.toDateString() === hoy.toDateString();
-  });
-
-  res.json(dataHoy);
+// Obtener todos los pallets
+app.get('/pallets', (req, res) => {
+  const data = fs.readFileSync(archivo, 'utf8');
+  const pallets = JSON.parse(data);
+  res.json(pallets);
 });
 
 // Guardar nuevo pallet
@@ -39,18 +28,19 @@ app.post('/guardar', (req, res) => {
 
   const data = fs.existsSync(archivo) ? JSON.parse(fs.readFileSync(archivo, 'utf8')) : [];
 
-  // Si ya existe el código, no lo guarda
-  if (data.some(p => p.codigo === codigo)) {
-    return res.json({ status: 'duplicado' });
+  const duplicado = data.find(p => p.codigo === codigo);
+  if (duplicado) {
+    return res.json({ status: 'duplicado', fecha: duplicado.fecha });
   }
 
-  // Guardar con hora local (UTC-4) manualmente corregida
   const fecha = DateTime.now().setZone('America/Los_Angeles').toFormat('yyyy-MM-dd HH:mm:ss');
-const nuevo = { codigo, fecha };
+  const nuevo = { codigo, fecha };
+  data.push(nuevo);
   fs.writeFileSync(archivo, JSON.stringify(data, null, 2));
   res.json({ status: 'ok' });
 });
 
+// Iniciar servidor
 app.listen(PORT, () => {
-  console.log(`Servidor auditando pallets en http://localhost:${PORT}`);
+  console.log(`Servidor escuchando en puerto ${PORT}`);
 });
