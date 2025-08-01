@@ -1,7 +1,6 @@
 {
   "name": "auditpallets",
   "version": "1.0.0",
-  "description": "AuditPallets App para escanear y registrar pallets",
   "main": "servidor.js",
   "scripts": {
     "start": "node servidor.js"
