@@ -1,6 +1,7 @@
 
 const express = require('express');
 const fs = require('fs');
+const { DateTime } = require('luxon');
 const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -43,17 +44,9 @@ app.post('/guardar', (req, res) => {
     return res.json({ status: 'duplicado' });
   }
 
-  // Guardar con hora local correctamente formateada
-  const ahora = new Date();
-  const fecha = ahora.getFullYear() + '-' +
-                String(ahora.getMonth()+1).padStart(2, '0') + '-' +
-                String(ahora.getDate()).padStart(2, '0') + ' ' +
-                String(ahora.getHours()).padStart(2, '0') + ':' +
-                String(ahora.getMinutes()).padStart(2, '0') + ':' +
-                String(ahora.getSeconds()).padStart(2, '0');
-
-  const nuevo = { codigo, fecha };
-  data.push(nuevo);
+  // Guardar con hora local (UTC-4) manualmente corregida
+  const fecha = DateTime.now().setZone('America/Los_Angeles').toFormat('yyyy-MM-dd HH:mm:ss');
+const nuevo = { codigo, fecha };
   fs.writeFileSync(archivo, JSON.stringify(data, null, 2));
   res.json({ status: 'ok' });
 });
