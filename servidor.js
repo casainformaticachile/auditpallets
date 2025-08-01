@@ -43,16 +43,17 @@ app.post('/guardar', (req, res) => {
     return res.json({ status: 'duplicado' });
   }
 
-  // Guardar con hora local (UTC-4) manualmente corregida
+  // Guardar con hora local correctamente formateada
   const ahora = new Date();
-const ahora = new Date();
-const fecha = ahora.getFullYear() + '-' +
-              String(ahora.getMonth()+1).padStart(2, '0') + '-' +
-              String(ahora.getDate()).padStart(2, '0') + ' ' +
-              String(ahora.getHours()).padStart(2, '0') + ':' +
-              String(ahora.getMinutes()).padStart(2, '0') + ':' +
-              String(ahora.getSeconds()).padStart(2, '0');
-const nuevo = { codigo, fecha };
+  const fecha = ahora.getFullYear() + '-' +
+                String(ahora.getMonth()+1).padStart(2, '0') + '-' +
+                String(ahora.getDate()).padStart(2, '0') + ' ' +
+                String(ahora.getHours()).padStart(2, '0') + ':' +
+                String(ahora.getMinutes()).padStart(2, '0') + ':' +
+                String(ahora.getSeconds()).padStart(2, '0');
+
+  const nuevo = { codigo, fecha };
+  data.push(nuevo);
   fs.writeFileSync(archivo, JSON.stringify(data, null, 2));
   res.json({ status: 'ok' });
 });
