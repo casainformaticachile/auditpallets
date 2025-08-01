@@ -2,68 +2,66 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const app = express();
-const PORT = 3000;
 
-const FILE_PATH = path.join(__dirname, 'pallets.json');
-const VERSION_JS = "VerJS: 202507312328";
-
-// Middleware
 app.use(express.json());
-app.use(express.static(__dirname));
+app.use(express.static(__dirname)); // Sirve index.html directamente
 
-// Verifica si el archivo existe y está bien formado
-function cargarDatos() {
-  if (!fs.existsSync(FILE_PATH)) {
-    fs.writeFileSync(FILE_PATH, "[]", "utf-8");
-    return [];
-  }
-  try {
-    const data = fs.readFileSync(FILE_PATH, 'utf-8');
-    return JSON.parse(data || "[]");
-  } catch (err) {
-    console.error("ERROR AL LEER JSON:", err);
-    return [];
-  }
+const archivoPallets = path.join(__dirname, 'pallets.json');
+
+// Crear archivo vacío si no existe
+if (!fs.existsSync(archivoPallets)) {
+  fs.writeFileSync(archivoPallets, '[]');
 }
 
-function guardarDatos(data) {
-  try {
-    fs.writeFileSync(FILE_PATH, JSON.stringify(data, null, 2), 'utf-8');
-  } catch (err) {
-    console.error("ERROR AL GUARDAR JSON:", err);
-  }
-}
-
+// POST /guardar - Agrega un pallet con fecha actual
 app.post('/guardar', (req, res) => {
-  const codigo = req.body.codigo?.trim();
-  if (!codigo) return res.status(400).json({ status: "error", message: "Código vacío" });
-
-  const datosActuales = cargarDatos();
-  const existe = datosActuales.find(d => d.codigo === codigo);
-  if (existe) {
-    return res.json({ status: "duplicate" });
+  const { codigo } = req.body;
+  if (!codigo) {
+    return res.status(400).json({ status: 'error', message: 'Código requerido' });
   }
 
-  const ahora = new Date();
-  ahora.setHours(ahora.getHours() - 7); // Ajuste de zona horaria
-  const fecha = ahora.toISOString().replace("T", " ").substring(0, 19);
+  const data = JSON.parse(fs.readFileSync(archivoPallets, 'utf8'));
 
-  const nuevo = { codigo, fecha };
-  datosActuales.push(nuevo);
-  guardarDatos(datosActuales);
+  const yaExiste = data.some(p => p.codigo === codigo && esHoy(p.fecha));
+  if (yaExiste) {
+    return res.json({ status: 'duplicate' });
+  }
 
-  res.json({ status: "ok" });
+  const nuevo = {
+    codigo,
+    fecha: new Date().toISOString()
+  };
+
+  data.push(nuevo);
+  fs.writeFileSync(archivoPallets, JSON.stringify(data, null, 2));
+
+  return res.json({ status: 'ok' });
 });
 
+// GET /hoy - Devuelve los pallets auditados hoy
 app.get('/hoy', (req, res) => {
-  const hoy = new Date();
-  hoy.setHours(hoy.getHours() - 7); // Aseguramos el huso horario -7
-  const fechaHoy = hoy.toISOString().slice(0, 10);
-  const datosActuales = cargarDatos();
-  const filtrados = datosActuales.filter(d => d.fecha?.startsWith(fechaHoy));
-  res.json(filtrados);
+  const data = JSON.parse(fs.readFileSync(archivoPallets, 'utf8'));
+  const hoy = data.filter(p => esHoy(p.fecha));
+  return res.json(hoy);
 });
 
+// GET /todos - Devuelve todos los pallets registrados
+app.get('/todos', (req, res) => {
+  const data = JSON.parse(fs.readFileSync(archivoPallets, 'utf8'));
+  return res.json(data);
+});
+
+// Función auxiliar para verificar si una fecha es de hoy
+function esHoy(fechaStr) {
+  const f = new Date(fechaStr);
+  const ahora = new Date();
+  return f.getFullYear() === ahora.getFullYear() &&
+         f.getMonth() === ahora.getMonth() &&
+         f.getDate() === ahora.getDate();
+}
+
+// Puerto requerido por Render
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Servidor corriendo en http://localhost:${PORT}`);
+  console.log(`Servidor corriendo en el puerto ${PORT}`);
 });
