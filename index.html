@@ -12,14 +12,26 @@
     h1 { margin: 0.5em 0 0.3em 0; text-align: center; font-weight: normal; width: 100%; max-width: 98vw; font-family: 'Oxanium', Arial, sans-serif; font-size: 50px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .form-container { width: 1200px; max-width: 98vw; display: flex; justify-content: center; align-items: center; position: relative; }
     form { display: flex; flex-direction: row; gap: 0.7em; margin: 0.7em 0 0.5em 0; justify-content: center; align-items: center; width: 100%; font-family: 'Oxanium', Arial, sans-serif; }
-    input[type="text"] { width: 1200px; height: 300px; padding: 0.4em; border: 2px solid #bbb; border-radius: 8px; font-size: 200px; font-family: 'Oxanium', Arial, sans-serif; text-align: center; box-sizing: border-box; caret-color: #ff0000; transition: background 0.2s; position: relative; z-index: 1; background: #fff; }
-    input[type="text"].verde-neon { background: #39ff14; color: #111; transition: background 0.2s; }
-    input[type="text"].amarillo-neon { background: #fff600; color: #111; transition: background 0.2s; }
-    input[type="text"]:disabled { opacity: 1; }
+    input[type="text"]#codigo { 
+        width: 1200px; height: 300px; padding: 0.4em; border: 2px solid #283655; border-radius: 8px; 
+        font-size: 200px; font-family: 'Oxanium', Arial, sans-serif; text-align: center; box-sizing: border-box; 
+        caret-color: #ff0000; transition: background 0.2s; position: relative; z-index: 1; background: #fff; 
+        color: #111; 
+    }
+    input[type="text"]#codigo.verde-neon { background: #39ff14; color: #111; transition: background 0.2s; }
+    input[type="text"]#codigo.amarillo-neon { background: #fff600; color: #111; transition: background 0.2s; }
+    input[type="text"]#codigo:disabled { opacity: 1; }
+    /* Placeholder SCAN HERE en blanco y tamaño normal */
+    input[type="text"]#codigo::placeholder { 
+        font-size: 200px; 
+        color: #fff; 
+        text-align: center; 
+        font-family: 'Oxanium', Arial, sans-serif; 
+        opacity: 1; 
+    }
     .placeholder-feedback { display: none; position: absolute; left: 0; right: 0; top: 0; height: 300px; font-size: 200px; color: #111; font-family: 'Oxanium', Arial, sans-serif; text-align: center; line-height: 300px; pointer-events: none; z-index: 2; background: transparent; white-space: nowrap; user-select: none; }
     .placeholder-feedback.mostrar { display: block; animation: fadeIn 0.16s; }
     @keyframes fadeIn { from { opacity: 0; } to   { opacity: 1; } }
-    input[type="text"]::placeholder { font-size: 200px; color: #bbb; text-align: center; font-family: 'Oxanium', Arial, sans-serif; opacity: 1; }
     #es-duplicado { color: #000; font-size: 50px; font-weight: bold; text-align: center; margin: 0.1em 0 0.1em 0; font-family: 'Oxanium', Arial, sans-serif; line-height: 1.1; user-select: none; min-height: 80px; transition: color 0.2s; word-break: break-all; }
     #codigo-mostrado { color: #ff0000; font-size: 200px; font-weight: bold; text-align: center; margin: 0.3em 0 0.1em 0; font-family: 'Oxanium', Arial, sans-serif; line-height: 1; word-break: break-all; max-width: 1200px; overflow-wrap: break-word; min-height: 220px; background: #fff; }
     .right-panel { width: 400px; min-width: 300px; max-width: 40vw; background: #f8fafc; border-left: 2px solid #e4e4e4; min-height: 100vh; padding: 32px 24px 24px 24px; box-sizing: border-box; display: flex; flex-direction: column; align-items: flex-start; position: relative; }
@@ -30,22 +42,59 @@
       margin: 0;
       width: 100%;
       font-family: 'Oxanium', Arial, sans-serif;
-      max-height: 50vh; /* <-- ahora ocupa el 50% de la altura de la ventana */
+      max-height: 50vh;
       overflow-y: auto;
     }
     #lista li { margin-bottom: 0.12em; padding: 0.2em 0.6em 0.2em 0; text-align: left; font-size: 14px; background: none; border: none; word-break: break-all; line-height: 1.1; font-family: 'Oxanium', Arial, sans-serif; transition: background 0.2s, color 0.2s; }
     #lista li.duplicado { background: yellow; color: #222; font-weight: bold; }
-    .manual-input-controls { width: 100%; display: flex; flex-direction: column; align-items: stretch; margin: 15px 0 16px 0; }
-    .manual-btn { width: 100%; font-size: 1.1em; padding: 10px; border-radius: 8px; border: 2px solid #bbb; margin-bottom: 10px; background: #e0eaff; color: #111; font-family: 'Oxanium', Arial, sans-serif; cursor: pointer; transition: background 0.2s; font-weight: bold; letter-spacing: 1.5px; text-transform: uppercase; }
-    .manual-btn:hover { background: #c2ddff; }
-    .manual-form { display: flex; flex-direction: row; gap: 0.5em; align-items: center; margin-bottom: 8px; }
-    .manual-form input[type="text"] { width: 100%; font-size: 1.2em; height: auto; padding: 7px; border-radius: 6px; border: 2px solid #bbb; }
+    /* Manual Input Button y campo */
+    .manual-input-controls { 
+        width: 100%; display: flex; flex-direction: column; align-items: stretch; 
+        margin: 20px 0 16px 0; /* margen superior de 20px respecto a la lista */
+    }
+    .manual-btn { 
+        width: 100%; 
+        font-size: 1.1em; 
+        padding: 10px; 
+        border-radius: 8px; 
+        border: 2px solid #283655; 
+        margin-bottom: 10px; 
+        background: #283655; 
+        color: #fff; 
+        font-family: 'Oxanium', Arial, sans-serif; 
+        cursor: pointer; 
+        transition: background 0.2s; 
+        font-weight: bold; 
+        letter-spacing: 1.5px; 
+        text-transform: uppercase; 
+    }
+    .manual-btn:hover { background: #394c7b; border-color: #283655; }
+    .manual-form { 
+        display: flex; flex-direction: row; gap: 0.5em; align-items: center; margin-bottom: 8px; 
+    }
+    .manual-form input[type="text"] {
+        width: 100%;
+        font-size: 12px;
+        height: auto;
+        padding: 7px;
+        border-radius: 6px;
+        border: 2px solid #283655;
+        background: #fff;
+        color: #111;
+        caret-color: #ff0000;
+        font-family: 'Oxanium', Arial, sans-serif;
+    }
+    .manual-form input[type="text"]::placeholder {
+        color: #bbb;
+        opacity: 1;
+        font-size: 12px;
+    }
     .manual-warning { color: #ff0000; font-weight: bold; font-size: 1.1em; margin-top: 0; margin-bottom: 6px; }
     @media (max-width: 1100px) {
-      .form-container, input[type="text"], #codigo-mostrado { width: 95vw !important; max-width: 98vw !important; }
+      .form-container, input[type="text"]#codigo, #codigo-mostrado { width: 95vw !important; max-width: 98vw !important; }
       .right-panel { min-width: 190px; width: 35vw; max-width: 98vw; padding: 18px 10px 10px 10px; }
       .designer-credit { left: 50%; transform: translateX(-50%); font-size: 11px; width: max-content; min-width: 60%; }
-      .manual-form input[type="text"] { font-size: 1em; }
+      .manual-form input[type="text"] { font-size: 12px; }
     }
     @media (max-width: 800px) {
       .main-layout { flex-direction: column; align-items: stretch; height: auto; }
@@ -53,7 +102,7 @@
       .right-panel { width: 100vw; min-width: 0; max-width: 100vw; border-left: none; border-top: 2px solid #e4e4e4; min-height: auto; padding: 18px 8px 32px 16px; box-sizing: border-box; margin: 0; }
       h1 { font-size: 7vw; white-space: normal; }
       .designer-credit { left: 50%; bottom: 0px; transform: translateX(-50%); font-size: 10px; width: max-content; min-width: 60%; }
-      .manual-form input[type="text"] { font-size: 1em; }
+      .manual-form input[type="text"] { font-size: 12px; }
     }
     .right-panel h2 { text-align: center !important; }
     #codigo { margin-top: 50px !important; display: block; margin-left: auto; margin-right: auto; }
@@ -91,7 +140,246 @@
     </div>
   </div>
 <script>
-<!-- tu script sigue igual -->
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('palletForm');
+    const lista = document.getElementById('lista');
+    const codigoInput = document.getElementById('codigo');
+    const codigoMostrado = document.getElementById('codigo-mostrado');
+    const esDuplicadoDiv = document.getElementById('es-duplicado');
+    const registeredMsg = document.getElementById('registeredMsg');
+    const duplicatedMsg = document.getElementById('duplicatedMsg');
+    // NUEVO: variables para input manual
+    const manualInputBtn = document.getElementById('manualInputBtn');
+    const manualForm = document.getElementById('manualForm');
+    const manualCodigo = document.getElementById('manualCodigo');
+    const manualWarning = document.getElementById('manualWarning');
+    let manualTimeout = null;
+
+    let palletsHoy = [];
+    let ultimoDuplicado = null;
+    let palletsHoyData = [];
+    let timerShowMsg = null;
+    let timerDelayMsg = null;
+
+    // Mostrar fecha en US/Pacific siempre
+    function formatFecha(fechaStr) {
+      const d = new Date(fechaStr + 'Z');
+      if (isNaN(d.getTime())) return fechaStr;
+      return d.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' });
+    }
+    // ¿Es hoy en US/Pacific?
+    function esHoy(fechaStr) {
+      const d = new Date(fechaStr + 'Z');
+      const pacific = d.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' });
+      const hoyPacific = new Date().toLocaleString('en-US', { timeZone: 'America/Los_Angeles' });
+      const [m1, d1, y1] = pacific.split(',')[0].split('/');
+      const [m2, d2, y2] = hoyPacific.split(',')[0].split('/');
+      return m1 === m2 && d1 === d2 && y1 === y2;
+    }
+    function cargarPallets() {
+      fetch('/api/pallets')
+        .then(res => res.json())
+        .then(data => {
+          lista.innerHTML = '';
+          const hoy = data.filter(item => esHoy(item.fecha));
+          hoy.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+          palletsHoy = hoy.map(item => item.codigo);
+          palletsHoyData = hoy;
+          hoy.forEach(item => {
+            const li = document.createElement('li');
+            li.textContent = `Pallet: ${item.codigo}   |   Date: ${formatFecha(item.fecha)}`;
+            if (ultimoDuplicado && item.codigo === ultimoDuplicado) {
+              li.classList.add('duplicado');
+              setTimeout(() => { li.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100);
+            }
+            lista.appendChild(li);
+          });
+        });
+    }
+    function mostrarDuplicado(codigo, esDuplicado) {
+      if (!codigo) { esDuplicadoDiv.textContent = ""; ultimoDuplicado = null; return; }
+      if (esDuplicado) {
+        const found = palletsHoyData.find(p => p.codigo === codigo);
+        const fecha = found ? formatFecha(found.fecha) : "";
+        esDuplicadoDiv.textContent = `PALLET SCAN DUPLICATED: ${fecha}`;
+        ultimoDuplicado = codigo;
+      } else {
+        const now = formatFecha(new Date().toISOString().slice(0,19));
+        esDuplicadoDiv.textContent = `PALLET SCAN REGISTERED: ${now}`;
+        ultimoDuplicado = null;
+      }
+    }
+    function bloquearInput() {
+      codigoInput.disabled = true;
+    }
+    function desbloquearInput() {
+      codigoInput.disabled = false;
+      codigoInput.focus();
+    }
+    function limpiarMensajes() {
+      registeredMsg.classList.remove('mostrar');
+      duplicatedMsg.classList.remove('mostrar');
+      codigoInput.classList.remove('verde-neon', 'amarillo-neon');
+      codigoInput.setAttribute('placeholder', 'SCAN HERE');
+    }
+    // Código grande rojo nunca desaparece hasta otro escaneo o recarga
+    function mostrarCodigoGrande(codigo) {
+      codigoMostrado.textContent = codigo;
+    }
+    // Mensaje REGISTERED/DUPLICATED aparece tras 0.25s y se queda 4.75s (total 5s)
+    function mostrarFeedback(estado) {
+      limpiarMensajes();
+      bloquearInput();
+      codigoInput.setAttribute('placeholder', '');
+      // Input color inmediato
+      if (estado === 'registered') {
+        codigoInput.classList.add('verde-neon');
+      } else if (estado === 'duplicated') {
+        codigoInput.classList.add('amarillo-neon');
+      }
+      // Mostrar mensaje con 0.25s de retardo, y quitar todo tras 5s
+      timerDelayMsg = setTimeout(() => {
+        if (estado === 'registered') {
+          registeredMsg.classList.add('mostrar');
+        } else if (estado === 'duplicated') {
+          duplicatedMsg.classList.add('mostrar');
+        }
+        timerShowMsg = setTimeout(() => {
+          limpiarMensajes();
+          desbloquearInput();
+        }, 4750);
+      }, 250);
+    }
+
+    form.onsubmit = function(e) {
+      e.preventDefault();
+      if (timerShowMsg) clearTimeout(timerShowMsg);
+      if (timerDelayMsg) clearTimeout(timerDelayMsg);
+
+      const codigo = codigoInput.value.trim();
+      if (!codigo) return;
+      const esDuplicado = palletsHoy.includes(codigo);
+
+      mostrarCodigoGrande(codigo);
+      mostrarDuplicado(codigo, esDuplicado);
+
+      if (esDuplicado) {
+        mostrarFeedback('duplicated');
+        cargarPallets();
+        form.reset();
+        return;
+      }
+      mostrarFeedback('registered');
+      fetch('/api/pallets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ codigo })
+      })
+      .then(res => {
+        if (res.status === 409) { // Duplicado detectado por backend
+          mostrarDuplicado(codigo, true);
+          mostrarFeedback('duplicated');
+          cargarPallets();
+          form.reset();
+          return Promise.reject('duplicado');
+        }
+        return res.json();
+      })
+      .then(() => {
+        ultimoDuplicado = null;
+        cargarPallets();
+        form.reset();
+      })
+      .catch(err => {
+        if (err !== 'duplicado') {
+          alert('Error inesperado guardando pallet');
+        }
+      });
+    };
+    codigoInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        form.requestSubmit();
+      }
+    });
+
+    // ----- INICIO LÓGICA PARA INPUT MANUAL CONTINUO -----
+    function resetManualTimeout() {
+      if (manualTimeout) clearTimeout(manualTimeout);
+      manualTimeout = setTimeout(() => {
+        manualForm.style.display = 'none';
+        manualWarning.style.display = 'none';
+        manualCodigo.value = '';
+      }, 60000); // 60 segundos
+    }
+    manualInputBtn.addEventListener('click', function() {
+      manualForm.style.display = manualForm.style.display === 'none' ? 'flex' : 'none';
+      manualWarning.style.display = 'none';
+      manualCodigo.value = '';
+      if (manualForm.style.display === 'flex') {
+        manualCodigo.focus();
+        resetManualTimeout();
+      } else {
+        if (manualTimeout) clearTimeout(manualTimeout);
+      }
+    });
+    manualForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const codigo = manualCodigo.value.trim();
+      manualWarning.style.display = 'none';
+      if (!codigo) return;
+      // Validar duplicado en JS
+      if (palletsHoy.includes(codigo)) {
+        manualWarning.textContent = '¡Código duplicado!';
+        manualWarning.style.display = 'block';
+        manualCodigo.value = '';
+        manualCodigo.focus();
+        resetManualTimeout();
+        return;
+      }
+      fetch('/api/pallets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ codigo })
+      })
+      .then(res => {
+        if (res.status === 409) {
+          manualWarning.textContent = '¡Código duplicado!';
+          manualWarning.style.display = 'block';
+          manualCodigo.value = '';
+          manualCodigo.focus();
+          resetManualTimeout();
+          return Promise.reject('duplicado');
+        }
+        return res.json();
+      })
+      .then(() => {
+        manualWarning.style.display = 'none';
+        manualCodigo.value = '';
+        cargarPallets();
+        manualCodigo.focus();
+        resetManualTimeout();
+      })
+      .catch(err => {
+        if (err !== 'duplicado') {
+          manualWarning.textContent = 'Error inesperado guardando pallet';
+          manualWarning.style.display = 'block';
+          resetManualTimeout();
+        }
+      });
+    });
+    manualCodigo.addEventListener('keydown', function(e) {
+      // Cualquier tecla reinicia timeout
+      resetManualTimeout();
+      if (e.key === 'Enter') {
+        manualForm.requestSubmit();
+      }
+    });
+    manualCodigo.addEventListener('input', resetManualTimeout);
+    cargarPallets();
+    codigoInput.focus();
+});
+// Opcional: recarga la página cada 6 horas para asegurar actualización
+setTimeout(() => { location.reload(); }, 6 * 60 * 60 * 1000);
 </script>
 </body>
 </html>
