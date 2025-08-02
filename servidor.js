@@ -27,7 +27,7 @@ app.get('/api/pallets', async (req, res) => {
   }
 });
 
-// Agregar nuevo pallet
+// Agregar nuevo pallet (con validación de duplicados a nivel backend)
 app.post('/api/pallets', async (req, res) => {
   const { codigo } = req.body;
   if (!codigo) return res.status(400).json({ error: 'Falta el código del pallet.' });
@@ -44,8 +44,13 @@ app.post('/api/pallets', async (req, res) => {
     await pool.query('INSERT INTO pallets (codigo, fecha) VALUES ($1, $2)', [codigo, fecha]);
     res.json({ ok: true, agregado: { codigo, fecha } });
   } catch (err) {
-    console.error('Error guardando datos:', err);
-    res.status(500).json({ error: 'Error guardando datos.' });
+    // Detecta error por duplicado (unique violation)
+    if (err.code === '23505') {
+      res.status(409).json({ error: 'Código duplicado. Ya existe un pallet con ese código.' });
+    } else {
+      console.error('Error guardando datos:', err);
+      res.status(500).json({ error: 'Error guardando datos.' });
+    }
   }
 });
 
