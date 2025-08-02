@@ -78,8 +78,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     let palletsHoy = [];
     let ultimoDuplicado = null;
-    let timerVerde = null, timerAmarillo = null, timerDisabled = null;
     let palletsHoyData = [];
+    let timerShowMsg = null;
 
     // Mostrar fecha en US/Pacific siempre
     function formatFecha(fechaStr) {
@@ -130,64 +130,58 @@ document.addEventListener('DOMContentLoaded', function() {
         ultimoDuplicado = null;
       }
     }
-    function ponerVerdeNeonYBloquearInput() {
-      codigoInput.classList.add('verde-neon');
-      codigoInput.classList.remove('amarillo-neon');
+    function bloquearInput() {
       codigoInput.disabled = true;
-      if (timerVerde) clearTimeout(timerVerde);
-      if (timerDisabled) clearTimeout(timerDisabled);
-      timerVerde = setTimeout(() => { codigoInput.classList.remove('verde-neon'); }, 7000);
-      timerDisabled = setTimeout(() => { codigoInput.disabled = false; codigoInput.focus(); }, 7000);
     }
-    function ponerAmarilloNeonYBloquearInput() {
-      codigoInput.classList.add('amarillo-neon');
-      codigoInput.classList.remove('verde-neon');
-      codigoInput.disabled = true;
-      if (timerAmarillo) clearTimeout(timerAmarillo);
-      if (timerDisabled) clearTimeout(timerDisabled);
-      timerAmarillo = setTimeout(() => { codigoInput.classList.remove('amarillo-neon'); }, 7000);
-      timerDisabled = setTimeout(() => { codigoInput.disabled = false; codigoInput.focus(); }, 7000);
+    function desbloquearInput() {
+      codigoInput.disabled = false;
+      codigoInput.focus();
     }
-
-    // NUEVO FLUJO: Mostrar código, luego resultado (REGISTERED/DUPLICATED), nunca juntos
-    function mostrarCodigoYEstado(codigo, estado) {
-      codigoMostrado.textContent = codigo;
+    function limpiarMensajes() {
+      codigoMostrado.textContent = '';
       registeredMsg.classList.remove('mostrar');
       duplicatedMsg.classList.remove('mostrar');
-      // Primero mostrar el código durante 5 segundos
-      setTimeout(() => {
-        codigoMostrado.textContent = "";
-        if (estado === 'registered') {
-          registeredMsg.classList.add('mostrar');
-          setTimeout(() => {
-            registeredMsg.classList.remove('mostrar');
-            codigoInput.setAttribute('placeholder', 'SCAN HERE');
-          }, 2000);
-        } else if (estado === 'duplicated') {
-          duplicatedMsg.classList.add('mostrar');
-          setTimeout(() => {
-            duplicatedMsg.classList.remove('mostrar');
-            codigoInput.setAttribute('placeholder', 'SCAN HERE');
-          }, 2000);
-        }
-      }, 5000);
+      codigoInput.setAttribute('placeholder', 'SCAN HERE');
+    }
+
+    // Código desaparece al instante, luego mensaje (1.5s), luego limpiar y habilitar input
+    function mostrarCodigoYEstado(estado) {
+      limpiarMensajes();
+      bloquearInput();
+      codigoInput.setAttribute('placeholder', '');
+
+      if (estado === 'registered') {
+        registeredMsg.classList.add('mostrar');
+      } else if (estado === 'duplicated') {
+        duplicatedMsg.classList.add('mostrar');
+      }
+      // Mostrar mensaje durante 1.5 segundos
+      timerShowMsg = setTimeout(() => {
+        limpiarMensajes();
+        desbloquearInput();
+      }, 1500);
     }
 
     form.onsubmit = function(e) {
       e.preventDefault();
+      if (timerShowMsg) clearTimeout(timerShowMsg);
+
       const codigo = codigoInput.value.trim();
       if (!codigo) return;
       const esDuplicado = palletsHoy.includes(codigo);
       mostrarDuplicado(codigo, esDuplicado);
+      codigoMostrado.textContent = '';
       if (esDuplicado) {
-        ponerAmarilloNeonYBloquearInput();
-        mostrarCodigoYEstado(codigo, 'duplicated');
+        codigoInput.classList.add('amarillo-neon');
+        codigoInput.classList.remove('verde-neon');
+        mostrarCodigoYEstado('duplicated');
         cargarPallets();
         form.reset();
         return;
       }
-      ponerVerdeNeonYBloquearInput();
-      mostrarCodigoYEstado(codigo, 'registered');
+      codigoInput.classList.add('verde-neon');
+      codigoInput.classList.remove('amarillo-neon');
+      mostrarCodigoYEstado('registered');
       fetch('/api/pallets', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -196,8 +190,9 @@ document.addEventListener('DOMContentLoaded', function() {
       .then(res => {
         if (res.status === 409) { // Duplicado detectado por backend
           mostrarDuplicado(codigo, true);
-          ponerAmarilloNeonYBloquearInput();
-          mostrarCodigoYEstado(codigo, 'duplicated');
+          codigoInput.classList.add('amarillo-neon');
+          codigoInput.classList.remove('verde-neon');
+          mostrarCodigoYEstado('duplicated');
           cargarPallets();
           form.reset();
           return Promise.reject('duplicado');
@@ -213,6 +208,11 @@ document.addEventListener('DOMContentLoaded', function() {
         if (err !== 'duplicado') {
           alert('Error inesperado guardando pallet');
         }
+      })
+      .finally(() => {
+        setTimeout(() => {
+          codigoInput.classList.remove('verde-neon', 'amarillo-neon');
+        }, 1500); // coincide con el tiempo de mensaje
       });
     };
     codigoInput.addEventListener('keydown', function(e) {
