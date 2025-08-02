@@ -79,7 +79,8 @@ document.addEventListener('DOMContentLoaded', function() {
     let palletsHoy = [];
     let ultimoDuplicado = null;
     let palletsHoyData = [];
-    let timerFeedback = null;
+    let timerShowMsg = null;
+    let timerDelayMsg = null;
 
     // Mostrar fecha en US/Pacific siempre
     function formatFecha(fechaStr) {
@@ -136,43 +137,53 @@ document.addEventListener('DOMContentLoaded', function() {
       codigoInput.disabled = false;
       codigoInput.focus();
     }
-    function limpiarFeedback() {
+    function limpiarMensajes() {
       registeredMsg.classList.remove('mostrar');
       duplicatedMsg.classList.remove('mostrar');
       codigoInput.classList.remove('verde-neon', 'amarillo-neon');
       codigoInput.setAttribute('placeholder', 'SCAN HERE');
     }
 
-    // Flujo principal: 5 segundos de feedback, el código grande nunca desaparece
+    // Código grande rojo nunca desaparece hasta otro escaneo o recarga
+    function mostrarCodigoGrande(codigo) {
+      codigoMostrado.textContent = codigo;
+    }
+
+    // Mensaje REGISTERED/DUPLICATED aparece tras 0.25s y se queda 4.75s (total 5s)
     function mostrarFeedback(estado) {
-      limpiarFeedback();
+      limpiarMensajes();
       bloquearInput();
       codigoInput.setAttribute('placeholder', '');
+      // Input color inmediato
       if (estado === 'registered') {
-        registeredMsg.classList.add('mostrar');
         codigoInput.classList.add('verde-neon');
       } else if (estado === 'duplicated') {
-        duplicatedMsg.classList.add('mostrar');
         codigoInput.classList.add('amarillo-neon');
       }
-      // Feedback durante 5 segundos
-      timerFeedback = setTimeout(() => {
-        limpiarFeedback();
-        desbloquearInput();
-      }, 5000);
+      // Mostrar mensaje con 0.25s de retardo, y quitar todo tras 5s
+      timerDelayMsg = setTimeout(() => {
+        if (estado === 'registered') {
+          registeredMsg.classList.add('mostrar');
+        } else if (estado === 'duplicated') {
+          duplicatedMsg.classList.add('mostrar');
+        }
+        timerShowMsg = setTimeout(() => {
+          limpiarMensajes();
+          desbloquearInput();
+        }, 4750);
+      }, 250);
     }
 
     form.onsubmit = function(e) {
       e.preventDefault();
-      if (timerFeedback) clearTimeout(timerFeedback);
+      if (timerShowMsg) clearTimeout(timerShowMsg);
+      if (timerDelayMsg) clearTimeout(timerDelayMsg);
 
       const codigo = codigoInput.value.trim();
       if (!codigo) return;
       const esDuplicado = palletsHoy.includes(codigo);
 
-      // Mostrar el código grande en rojo SIEMPRE (y nunca se borra hasta otro escaneo)
-      codigoMostrado.textContent = codigo;
-
+      mostrarCodigoGrande(codigo);
       mostrarDuplicado(codigo, esDuplicado);
 
       if (esDuplicado) {
