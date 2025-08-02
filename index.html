@@ -21,7 +21,7 @@
     @keyframes fadeIn { from { opacity: 0; } to   { opacity: 1; } }
     input[type="text"]::placeholder { font-size: 200px; color: #bbb; text-align: center; font-family: 'Oxanium', Arial, sans-serif; opacity: 1; }
     #es-duplicado { color: #000; font-size: 50px; font-weight: bold; text-align: center; margin: 0.1em 0 0.1em 0; font-family: 'Oxanium', Arial, sans-serif; line-height: 1.1; user-select: none; min-height: 80px; transition: color 0.2s; word-break: break-all; }
-    #codigo-mostrado { color: #ff0000; font-size: 200px; font-weight: bold; text-align: center; margin: 0.3em 0 0.1em 0; font-family: 'Oxanium', Arial, sans-serif; line-height: 1; word-break: break-all; max-width: 1300px; overflow-wrap: break-word; }
+    #codigo-mostrado { color: #ff0000; font-size: 200px; font-weight: bold; text-align: center; margin: 0.3em 0 0.1em 0; font-family: 'Oxanium', Arial, sans-serif; line-height: 1; word-break: break-all; max-width: 1300px; overflow-wrap: break-word; min-height: 220px;}
     .right-panel { width: 400px; min-width: 300px; max-width: 40vw; background: #f8fafc; border-left: 2px solid #e4e4e4; min-height: 100vh; padding: 32px 24px 24px 24px; box-sizing: border-box; display: flex; flex-direction: column; align-items: flex-start; position: relative; }
     .right-panel h2 { margin-top: 0; margin-bottom: 0.7em; font-size: 1.25em; font-family: 'Oxanium', Arial, sans-serif; font-weight: normal; color: #111; text-align: left; width: 100%; letter-spacing: 0.5px; }
     #lista { list-style: disc inside; padding: 0; margin: 0; width: 100%; font-family: 'Oxanium', Arial, sans-serif; max-height: 75vh; overflow-y: auto; }
@@ -47,7 +47,6 @@
 </style>
 </head>
 <body>
-  <img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/..." alt="Logo" style="position: absolute; top: 10px; left: 10px; width: 160px; z-index: 999;">
   <div class="main-layout">
     <div class="left-panel">
       <h1>PALLET CHECKED SYSTEM</h1>
@@ -79,7 +78,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     let palletsHoy = [];
     let ultimoDuplicado = null;
-    let timerVerde = null, timerAmarillo = null, timerRegistered = null, timerDuplicated = null, timerDisabled = null;
+    let timerVerde = null, timerAmarillo = null, timerDisabled = null;
     let palletsHoyData = [];
 
     // Mostrar fecha en US/Pacific siempre
@@ -137,8 +136,8 @@ document.addEventListener('DOMContentLoaded', function() {
       codigoInput.disabled = true;
       if (timerVerde) clearTimeout(timerVerde);
       if (timerDisabled) clearTimeout(timerDisabled);
-      timerVerde = setTimeout(() => { codigoInput.classList.remove('verde-neon'); }, 5000);
-      timerDisabled = setTimeout(() => { codigoInput.disabled = false; codigoInput.focus(); }, 5000);
+      timerVerde = setTimeout(() => { codigoInput.classList.remove('verde-neon'); }, 7000);
+      timerDisabled = setTimeout(() => { codigoInput.disabled = false; codigoInput.focus(); }, 7000);
     }
     function ponerAmarilloNeonYBloquearInput() {
       codigoInput.classList.add('amarillo-neon');
@@ -146,45 +145,49 @@ document.addEventListener('DOMContentLoaded', function() {
       codigoInput.disabled = true;
       if (timerAmarillo) clearTimeout(timerAmarillo);
       if (timerDisabled) clearTimeout(timerDisabled);
-      timerAmarillo = setTimeout(() => { codigoInput.classList.remove('amarillo-neon'); }, 5000);
-      timerDisabled = setTimeout(() => { codigoInput.disabled = false; codigoInput.focus(); }, 5000);
+      timerAmarillo = setTimeout(() => { codigoInput.classList.remove('amarillo-neon'); }, 7000);
+      timerDisabled = setTimeout(() => { codigoInput.disabled = false; codigoInput.focus(); }, 7000);
     }
-    function mostrarRegisteredMsg() {
-      codigoInput.setAttribute('placeholder', '');
-      registeredMsg.classList.add('mostrar');
-      duplicatedMsg.classList.remove('mostrar');
-      if (timerRegistered) clearTimeout(timerRegistered);
-      timerRegistered = setTimeout(() => {
-        registeredMsg.classList.remove('mostrar');
-        codigoInput.setAttribute('placeholder', 'SCAN HERE');
-      }, 5000);
-    }
-    function mostrarDuplicatedMsg() {
-      codigoInput.setAttribute('placeholder', '');
-      duplicatedMsg.classList.add('mostrar');
+
+    // NUEVO FLUJO: Mostrar código, luego resultado (REGISTERED/DUPLICATED), nunca juntos
+    function mostrarCodigoYEstado(codigo, estado) {
+      codigoMostrado.textContent = codigo;
       registeredMsg.classList.remove('mostrar');
-      if (timerDuplicated) clearTimeout(timerDuplicated);
-      timerDuplicated = setTimeout(() => {
-        duplicatedMsg.classList.remove('mostrar');
-        codigoInput.setAttribute('placeholder', 'SCAN HERE');
+      duplicatedMsg.classList.remove('mostrar');
+      // Primero mostrar el código durante 5 segundos
+      setTimeout(() => {
+        codigoMostrado.textContent = "";
+        if (estado === 'registered') {
+          registeredMsg.classList.add('mostrar');
+          setTimeout(() => {
+            registeredMsg.classList.remove('mostrar');
+            codigoInput.setAttribute('placeholder', 'SCAN HERE');
+          }, 2000);
+        } else if (estado === 'duplicated') {
+          duplicatedMsg.classList.add('mostrar');
+          setTimeout(() => {
+            duplicatedMsg.classList.remove('mostrar');
+            codigoInput.setAttribute('placeholder', 'SCAN HERE');
+          }, 2000);
+        }
       }, 5000);
     }
+
     form.onsubmit = function(e) {
       e.preventDefault();
       const codigo = codigoInput.value.trim();
       if (!codigo) return;
-      codigoMostrado.textContent = codigo;
       const esDuplicado = palletsHoy.includes(codigo);
       mostrarDuplicado(codigo, esDuplicado);
       if (esDuplicado) {
         ponerAmarilloNeonYBloquearInput();
-        mostrarDuplicatedMsg();
+        mostrarCodigoYEstado(codigo, 'duplicated');
         cargarPallets();
         form.reset();
         return;
       }
       ponerVerdeNeonYBloquearInput();
-      mostrarRegisteredMsg();
+      mostrarCodigoYEstado(codigo, 'registered');
       fetch('/api/pallets', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -194,7 +197,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (res.status === 409) { // Duplicado detectado por backend
           mostrarDuplicado(codigo, true);
           ponerAmarilloNeonYBloquearInput();
-          mostrarDuplicatedMsg();
+          mostrarCodigoYEstado(codigo, 'duplicated');
           cargarPallets();
           form.reset();
           return Promise.reject('duplicado');
