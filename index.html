@@ -4,14 +4,34 @@
 <meta charset="utf-8"/>
 <title>PALLET CHECKED SYSTEM</title>
 <link href="https://fonts.googleapis.com/css?family=Oxanium:400,700&amp;display=swap" rel="stylesheet"/>
-<!-- ...estilos igual que antes... -->
 <style>
-/* Copia aquí los estilos CSS completos del archivo original */
+/* (Aquí va tu CSS, igual que antes, lo puedes copiar completo) */
 </style>
 </head>
 <body>
-<!-- ...estructura HTML igual que antes... -->
+<img alt="Logo" src="data:image/jpeg;base64,/9j/4AAQSkZJR..." style="position: absolute; top: 10px; left: 10px; width: 80px; z-index: 999;"/>
+<div class="main-layout">
+<div class="left-panel">
+<h1>PALLET CHECKED SYSTEM</h1>
+<div class="form-container">
+<form autocomplete="off" id="palletForm">
+<input autofocus="" id="codigo" placeholder="SCAN HERE" type="text"/>
+<span class="placeholder-feedback" id="registeredMsg">REGISTERED</span>
+<span class="placeholder-feedback" id="duplicatedMsg">DUPLICATED</span>
+</form>
+</div>
+<div id="es-duplicado"></div>
+<div id="codigo-mostrado"></div>
+</div>
+<div class="right-panel">
+<h2>PALLETS CHECKED TODAY</h2>
+<ul id="lista"></ul>
+<div class="designer-credit">Designed &amp; Developed by Mentes Inquietas 2025</div>
+</div>
+</div>
 <script>
+// ¡TODO EL CÓDIGO JS ESTÁ DENTRO DEL EVENTO DOMContentLoaded!
+document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('palletForm');
     const lista = document.getElementById('lista');
     const codigoInput = document.getElementById('codigo');
@@ -20,9 +40,9 @@
     const registeredMsg = document.getElementById('registeredMsg');
     const duplicatedMsg = document.getElementById('duplicatedMsg');
 
-    // Mantiene los pallets de hoy en memoria para control de duplicado
     let palletsHoy = [];
     let ultimoDuplicado = null;
+    let palletsHoyData = [];
     let timerVerde = null;
     let timerAmarillo = null;
     let timerRegistered = null;
@@ -72,7 +92,6 @@
           });
         });
     }
-    let palletsHoyData = [];
     function mostrarDuplicado(codigo, esDuplicado) {
       if (!codigo) {
         esDuplicadoDiv.textContent = "";
@@ -155,7 +174,6 @@
       ponerVerdeNeonYBloquearInput();
       mostrarRegisteredMsg();
 
-      // Cambia aquí para manejar duplicados por el backend:
       fetch('/api/pallets', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -190,12 +208,11 @@
     });
     cargarPallets();
     codigoInput.focus();
-</script>
-<script>
-  // Recarga la página automáticamente cada 6 horas
-  setTimeout(() => {
-    location.reload();
-  }, 6 * 60 * 60 * 1000);
+});
+// Recarga la página automáticamente cada 6 horas
+setTimeout(() => {
+  location.reload();
+}, 6 * 60 * 60 * 1000);
 </script>
 </body>
 </html>

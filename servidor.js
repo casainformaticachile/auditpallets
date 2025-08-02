@@ -4,6 +4,7 @@ const { Pool } = require('pg');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Ajusta tu connectionString al de tu base de datos real
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL || 'postgresql://drbsauditpaslletsdb_user:JE6FOtUVTUaMvPnfeUPe33RKeDVlc4LE@dpg-d26md78gjchc73e5a3bg-a.oregon-postgres.render.com/drbsauditpaslletsdb',
   ssl: { rejectUnauthorized: false }
@@ -11,12 +12,10 @@ const pool = new Pool({
 
 app.use(express.json());
 
-// Servir archivo index.html
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Obtener todos los pallets
 app.get('/api/pallets', async (req, res) => {
   try {
     const result = await pool.query('SELECT codigo, fecha FROM pallets ORDER BY id ASC');
@@ -27,7 +26,6 @@ app.get('/api/pallets', async (req, res) => {
   }
 });
 
-// Agregar nuevo pallet (con validación de duplicados a nivel backend)
 app.post('/api/pallets', async (req, res) => {
   const { codigo } = req.body;
   if (!codigo) return res.status(400).json({ error: 'Falta el código del pallet.' });
@@ -44,7 +42,6 @@ app.post('/api/pallets', async (req, res) => {
     await pool.query('INSERT INTO pallets (codigo, fecha) VALUES ($1, $2)', [codigo, fecha]);
     res.json({ ok: true, agregado: { codigo, fecha } });
   } catch (err) {
-    // Detecta error por duplicado (unique violation)
     if (err.code === '23505') {
       res.status(409).json({ error: 'Código duplicado. Ya existe un pallet con ese código.' });
     } else {
