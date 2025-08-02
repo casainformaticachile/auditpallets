@@ -21,7 +21,7 @@
     @keyframes fadeIn { from { opacity: 0; } to   { opacity: 1; } }
     input[type="text"]::placeholder { font-size: 200px; color: #bbb; text-align: center; font-family: 'Oxanium', Arial, sans-serif; opacity: 1; }
     #es-duplicado { color: #000; font-size: 50px; font-weight: bold; text-align: center; margin: 0.1em 0 0.1em 0; font-family: 'Oxanium', Arial, sans-serif; line-height: 1.1; user-select: none; min-height: 80px; transition: color 0.2s; word-break: break-all; }
-    #codigo-mostrado { color: #ff0000; font-size: 200px; font-weight: bold; text-align: center; margin: 0.3em 0 0.1em 0; font-family: 'Oxanium', Arial, sans-serif; line-height: 1; word-break: break-all; max-width: 1300px; overflow-wrap: break-word; min-height: 220px;}
+    #codigo-mostrado { color: #ff0000; font-size: 200px; font-weight: bold; text-align: center; margin: 0.3em 0 0.1em 0; font-family: 'Oxanium', Arial, sans-serif; line-height: 1; word-break: break-all; max-width: 1300px; overflow-wrap: break-word; min-height: 220px; background: #fff; }
     .right-panel { width: 400px; min-width: 300px; max-width: 40vw; background: #f8fafc; border-left: 2px solid #e4e4e4; min-height: 100vh; padding: 32px 24px 24px 24px; box-sizing: border-box; display: flex; flex-direction: column; align-items: flex-start; position: relative; }
     .right-panel h2 { margin-top: 0; margin-bottom: 0.7em; font-size: 1.25em; font-family: 'Oxanium', Arial, sans-serif; font-weight: normal; color: #111; text-align: left; width: 100%; letter-spacing: 0.5px; }
     #lista { list-style: disc inside; padding: 0; margin: 0; width: 100%; font-family: 'Oxanium', Arial, sans-serif; max-height: 75vh; overflow-y: auto; }
@@ -79,7 +79,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let palletsHoy = [];
     let ultimoDuplicado = null;
     let palletsHoyData = [];
-    let timerShowMsg = null;
+    let timerFeedback = null;
 
     // Mostrar fecha en US/Pacific siempre
     function formatFecha(fechaStr) {
@@ -92,7 +92,6 @@ document.addEventListener('DOMContentLoaded', function() {
       const d = new Date(fechaStr + 'Z');
       const pacific = d.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' });
       const hoyPacific = new Date().toLocaleString('en-US', { timeZone: 'America/Los_Angeles' });
-      // Extrae solo año-mes-día
       const [m1, d1, y1] = pacific.split(',')[0].split('/');
       const [m2, d2, y2] = hoyPacific.split(',')[0].split('/');
       return m1 === m2 && d1 === d2 && y1 === y2;
@@ -137,51 +136,52 @@ document.addEventListener('DOMContentLoaded', function() {
       codigoInput.disabled = false;
       codigoInput.focus();
     }
-    function limpiarMensajes() {
-      codigoMostrado.textContent = '';
+    function limpiarFeedback() {
       registeredMsg.classList.remove('mostrar');
       duplicatedMsg.classList.remove('mostrar');
+      codigoInput.classList.remove('verde-neon', 'amarillo-neon');
       codigoInput.setAttribute('placeholder', 'SCAN HERE');
     }
 
-    // Código desaparece al instante, luego mensaje (1.5s), luego limpiar y habilitar input
-    function mostrarCodigoYEstado(estado) {
-      limpiarMensajes();
+    // Flujo principal: 5 segundos de feedback, el código grande nunca desaparece
+    function mostrarFeedback(estado) {
+      limpiarFeedback();
       bloquearInput();
       codigoInput.setAttribute('placeholder', '');
-
       if (estado === 'registered') {
         registeredMsg.classList.add('mostrar');
+        codigoInput.classList.add('verde-neon');
       } else if (estado === 'duplicated') {
         duplicatedMsg.classList.add('mostrar');
+        codigoInput.classList.add('amarillo-neon');
       }
-      // Mostrar mensaje durante 1.5 segundos
-      timerShowMsg = setTimeout(() => {
-        limpiarMensajes();
+      // Feedback durante 5 segundos
+      timerFeedback = setTimeout(() => {
+        limpiarFeedback();
         desbloquearInput();
-      }, 1500);
+      }, 5000);
     }
 
     form.onsubmit = function(e) {
       e.preventDefault();
-      if (timerShowMsg) clearTimeout(timerShowMsg);
+      if (timerFeedback) clearTimeout(timerFeedback);
 
       const codigo = codigoInput.value.trim();
       if (!codigo) return;
       const esDuplicado = palletsHoy.includes(codigo);
+
+      // Mostrar el código grande en rojo SIEMPRE (y nunca se borra hasta otro escaneo)
+      codigoMostrado.textContent = codigo;
+
       mostrarDuplicado(codigo, esDuplicado);
-      codigoMostrado.textContent = '';
+
       if (esDuplicado) {
-        codigoInput.classList.add('amarillo-neon');
-        codigoInput.classList.remove('verde-neon');
-        mostrarCodigoYEstado('duplicated');
+        mostrarFeedback('duplicated');
         cargarPallets();
         form.reset();
         return;
       }
-      codigoInput.classList.add('verde-neon');
-      codigoInput.classList.remove('amarillo-neon');
-      mostrarCodigoYEstado('registered');
+      mostrarFeedback('registered');
       fetch('/api/pallets', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -190,9 +190,7 @@ document.addEventListener('DOMContentLoaded', function() {
       .then(res => {
         if (res.status === 409) { // Duplicado detectado por backend
           mostrarDuplicado(codigo, true);
-          codigoInput.classList.add('amarillo-neon');
-          codigoInput.classList.remove('verde-neon');
-          mostrarCodigoYEstado('duplicated');
+          mostrarFeedback('duplicated');
           cargarPallets();
           form.reset();
           return Promise.reject('duplicado');
@@ -208,11 +206,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (err !== 'duplicado') {
           alert('Error inesperado guardando pallet');
         }
-      })
-      .finally(() => {
-        setTimeout(() => {
-          codigoInput.classList.remove('verde-neon', 'amarillo-neon');
-        }, 1500); // coincide con el tiempo de mensaje
       });
     };
     codigoInput.addEventListener('keydown', function(e) {
