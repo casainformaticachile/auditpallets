@@ -4,7 +4,6 @@
 <meta charset="utf-8"/>
 <title>PALLET CHECKED SYSTEM</title>
 <link href="https://fonts.googleapis.com/css?family=Oxanium:400,700&amp;display=swap" rel="stylesheet"/>
-<!-- Tu CSS sin tocar -->
 <style>
     body { min-height: 100vh; margin: 0; font-family: 'Oxanium', Arial, sans-serif; background: #fff; }
     .main-layout { display: flex; flex-direction: row; align-items: flex-start; justify-content: flex-start; width: 100vw; height: 100vh; box-sizing: border-box; padding: 0; }
@@ -83,22 +82,21 @@ document.addEventListener('DOMContentLoaded', function() {
     let timerVerde = null, timerAmarillo = null, timerRegistered = null, timerDuplicated = null, timerDisabled = null;
     let palletsHoyData = [];
 
+    // Mostrar fecha en US/Pacific siempre
     function formatFecha(fechaStr) {
-      const d = new Date(fechaStr);
+      const d = new Date(fechaStr + 'Z');
       if (isNaN(d.getTime())) return fechaStr;
-      const pad = n => n.toString().padStart(2, '0');
-      return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+      return d.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' });
     }
-    function getNowFormatted() {
-      const d = new Date();
-      const pad = n => n.toString().padStart(2, '0');
-      return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-    }
+    // ¿Es hoy en US/Pacific?
     function esHoy(fechaStr) {
-      const hoy = new Date();
-      const [anio, mes, dia] = [hoy.getFullYear(), hoy.getMonth() + 1, hoy.getDate()];
-      const [anioF, mesF, diaF] = fechaStr.split(' ')[0].split('-').map(Number);
-      return anio === anioF && mes === mesF && dia === diaF;
+      const d = new Date(fechaStr + 'Z');
+      const pacific = d.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' });
+      const hoyPacific = new Date().toLocaleString('en-US', { timeZone: 'America/Los_Angeles' });
+      // Extrae solo año-mes-día
+      const [m1, d1, y1] = pacific.split(',')[0].split('/');
+      const [m2, d2, y2] = hoyPacific.split(',')[0].split('/');
+      return m1 === m2 && d1 === d2 && y1 === y2;
     }
     function cargarPallets() {
       fetch('/api/pallets')
@@ -111,7 +109,7 @@ document.addEventListener('DOMContentLoaded', function() {
           palletsHoyData = hoy;
           hoy.forEach(item => {
             const li = document.createElement('li');
-            li.textContent = `Pallet: ${item.codigo}   |   Date: ${item.fecha}`;
+            li.textContent = `Pallet: ${item.codigo}   |   Date: ${formatFecha(item.fecha)}`;
             if (ultimoDuplicado && item.codigo === ultimoDuplicado) {
               li.classList.add('duplicado');
               setTimeout(() => { li.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100);
@@ -128,7 +126,7 @@ document.addEventListener('DOMContentLoaded', function() {
         esDuplicadoDiv.textContent = `PALLET SCAN DUPLICATED: ${fecha}`;
         ultimoDuplicado = codigo;
       } else {
-        const now = getNowFormatted();
+        const now = formatFecha(new Date().toISOString().slice(0,19));
         esDuplicadoDiv.textContent = `PALLET SCAN REGISTERED: ${now}`;
         ultimoDuplicado = null;
       }
@@ -187,8 +185,6 @@ document.addEventListener('DOMContentLoaded', function() {
       }
       ponerVerdeNeonYBloquearInput();
       mostrarRegisteredMsg();
-
-      // MEJORA: Manejar duplicados también en backend (409)
       fetch('/api/pallets', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
